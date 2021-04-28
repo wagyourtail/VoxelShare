@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "id": "VoxelShare",
+  "version": "${version}",
+  "name": "VoxelShare",
+  "description": "share voxelmap data between multiple clients",
+  "authors": [
+    "wagyourtail"
+  ],
+  "contact": {
+    "website": "wagyourtail.xyz"
+  },
+  "license": "MPL-2.0",
+  "icon": "assets/VoxelShare/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "client": [
+      "xyz.wagyourtail.voxelshare.client.VoxelShareClient"
+    ],
+    "server": [
+      "xyz.wagyourtail.voxelshare.server.VoxelShareServer"
+    ],
+    "main": [
+      "xyz.wagyourtail.voxelshare.VoxelShare"
+    ]
+  },
+  "mixins": [
+    "VoxelShare.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.11.3",
+    "fabric": "*",
+    "minecraft": "1.16.5"
+  }
+}
