@@ -1,4 +1,4 @@
-package xyz.wagyourtail.voxelmapapi.mixin;
+package xyz.wagyourtail.voxelmapapi.mixin.waypoints;
 
 import com.mamiyaotaru.voxelmap.util.DimensionContainer;
 import com.mamiyaotaru.voxelmap.util.Waypoint;

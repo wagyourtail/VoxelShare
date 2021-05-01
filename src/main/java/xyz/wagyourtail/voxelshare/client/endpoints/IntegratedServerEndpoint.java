@@ -1,4 +1,4 @@
-package xyz.wagyourtail.voxelshare.client;
+package xyz.wagyourtail.voxelshare.client.endpoints;
 
 import net.minecraft.client.MinecraftClient;
 

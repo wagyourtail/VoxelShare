@@ -6,19 +6,19 @@ import xyz.wagyourtail.voxelshare.packets.PacketOpcodes;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
-public class PacketMoveWaypointC2S extends Packet {
+public class PacketEditWaypointC2S extends Packet {
     public static final byte OPCODE = PacketOpcodes.EditWaypoint.opcode;
     public final String server;
     public final PacketWaypointC2S from;
     public final PacketWaypointC2S to;
 
-    public PacketMoveWaypointC2S(String server, PacketWaypointC2S from, PacketWaypointC2S to) {
+    public PacketEditWaypointC2S(String server, PacketWaypointC2S from, PacketWaypointC2S to) {
         this.server = server;
         this.from = from;
         this.to = to;
     }
 
-    public PacketMoveWaypointC2S(ByteBuffer buff) {
+    public PacketEditWaypointC2S(ByteBuffer buff) {
         this.server = readString(buff);
         this.from = new PacketWaypointC2S(server, buff);
         this.to = new PacketWaypointC2S(server, buff);
