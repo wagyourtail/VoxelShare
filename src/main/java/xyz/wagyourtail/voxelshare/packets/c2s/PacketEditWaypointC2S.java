@@ -7,7 +7,7 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
 public class PacketMoveWaypointC2S extends Packet {
-    public static final byte OPCODE = PacketOpcodes.MoveWaypoint.opcode;
+    public static final byte OPCODE = PacketOpcodes.EditWaypoint.opcode;
     public final String server;
     public final PacketWaypointC2S from;
     public final PacketWaypointC2S to;

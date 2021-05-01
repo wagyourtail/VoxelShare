@@ -1,28 +1,31 @@
 package xyz.wagyourtail.voxelshare.server;
 
+import net.minecraft.server.MinecraftServer;
 import xyz.wagyourtail.voxelshare.BasePacketListener;
-import xyz.wagyourtail.voxelshare.client.DedicatedServer;
 import xyz.wagyourtail.voxelshare.packets.PacketOpcodes;
 import xyz.wagyourtail.voxelshare.packets.c2s.*;
 
 import java.nio.ByteBuffer;
-import java.util.UUID;
 
 /**
  * per player instance tracked by connection
  */
 public abstract class AbstractServerPacketListener extends BasePacketListener {
-    public UUID player;
+    public DedicatedClientEndpoint player;
+    public final MinecraftServer server;
 
-    public AbstractServerPacketListener(UUID player) {
+    public AbstractServerPacketListener(DedicatedClientEndpoint player, MinecraftServer server) {
         this.player = player;
+        this.server = server;
     }
 
     public abstract void onPing();
 
     public abstract void onPlayer(PacketSetPlayerC2S setPlayer);
 
-    public abstract void onPosition(PacketPositionC2S position);
+    public void onPosition(PacketPositionC2S position) {
+        this.player.setPos(position.x, position.z);
+    }
 
     public abstract void onRegion(PacketRegionC2S region);
 
@@ -46,13 +49,14 @@ public abstract class AbstractServerPacketListener extends BasePacketListener {
 
     public abstract void onDeleteWaypoint(PacketDeleteWaypointC2S deleteWaypoint);
 
-    public abstract void onmoveWaypoint(PacketMoveWaypointC2S moveWaypoint);
+    public abstract void onmoveWaypoint(PacketEditWaypointC2S moveWaypoint);
 
-    public abstract void onFrequency(PacketFrequencyC2S frequency);
+    public abstract void onFrequency(PacketConfigC2S frequency);
 
+    public abstract void onWorld(PacketWorldC2S world);
 
     public void checkServer(String server) {
-        if (!((Object)this instanceof DedicatedServer) && !server.equals(this.getServerName())) {
+        if (!(this instanceof DedicatedServerPacketListener) && !server.equals(this.getServerName())) {
             throw new IllegalStateException("wrong server id for packet");
         }
     }
@@ -60,13 +64,16 @@ public abstract class AbstractServerPacketListener extends BasePacketListener {
     public abstract String getServerName();
 
     @Override
-    public void onPacket(ByteBuffer buff) throws UnsupportedOperationException {
-        switch (PacketOpcodes.getByOpcode(buff.get())) {
+    public void onPacket(PacketOpcodes opcode, ByteBuffer buff) throws UnsupportedOperationException {
+        switch (opcode) {
             case PING:
                 this.onPing();
                 break;
-            case Frequency:
-                onFrequency(new PacketFrequencyC2S(buff));
+            case World:
+                this.onWorld(new PacketWorldC2S(buff));
+                break;
+            case ConfigSync:
+                onFrequency(new PacketConfigC2S(buff));
                 break;
             case Player:
                 onPlayer(new PacketSetPlayerC2S(buff));
@@ -101,10 +108,10 @@ public abstract class AbstractServerPacketListener extends BasePacketListener {
             case DeleteWaypoint:
                 onDeleteWaypoint(new PacketDeleteWaypointC2S(buff));
                 break;
-            case MoveWaypoint:
-                onmoveWaypoint(new PacketMoveWaypointC2S(buff));
+            case EditWaypoint:
+                onmoveWaypoint(new PacketEditWaypointC2S(buff));
                 break;
-            case UNKNOWN:
+            case Error:
             default:
                 throw new UnsupportedOperationException("Unsupported Opcode");
         }

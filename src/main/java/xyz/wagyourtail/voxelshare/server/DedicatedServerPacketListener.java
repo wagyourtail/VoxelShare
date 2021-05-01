@@ -1,20 +1,26 @@
 package xyz.wagyourtail.voxelshare.server;
 
+import net.minecraft.server.MinecraftServer;
+import xyz.wagyourtail.voxelshare.VoxelShare;
 import xyz.wagyourtail.voxelshare.packets.c2s.*;
+import xyz.wagyourtail.voxelshare.packets.s2c.PacketConfigS2C;
+import xyz.wagyourtail.voxelshare.packets.s2c.PacketWorldS2C;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 public class DedicatedServerPacketListener extends AbstractServerPacketListener {
-    public static Map<UUID, DedicatedServerPacketListener> listeners = new HashMap<>();
 
-    public DedicatedServerPacketListener(UUID player) {
-        super(player);
+    public DedicatedServerPacketListener(UUID player, MinecraftServer server) {
+        super(new DedicatedClientEndpoint(player), server);
+    }
+
+    public DedicatedServerPacketListener(DedicatedClientEndpoint player, MinecraftServer server) {
+        super(player, server);
     }
 
     @Override
     public void onPing() {
+        //keepalive from client.
     }
 
     @Override
@@ -24,7 +30,7 @@ public class DedicatedServerPacketListener extends AbstractServerPacketListener 
 
     @Override
     public void onPosition(PacketPositionC2S position) {
-
+        //ignore we'll just get this from their entity on dedicated
     }
 
     @Override
@@ -53,13 +59,25 @@ public class DedicatedServerPacketListener extends AbstractServerPacketListener 
     }
 
     @Override
-    public void onmoveWaypoint(PacketMoveWaypointC2S moveWaypoint) {
+    public void onmoveWaypoint(PacketEditWaypointC2S moveWaypoint) {
 
     }
 
     @Override
-    public void onFrequency(PacketFrequencyC2S frequency) {
+    public void onFrequency(PacketConfigC2S frequency) {
+        player.setConfig(frequency.sendWaypoint, frequency.sendRegion, frequency.sendPosition, frequency.waypointFrequency, frequency.regionFrequency, frequency.positionFrequency);
+        player.sendPacket(server, new PacketConfigS2C(VoxelShare.config));
+    }
 
+    @Override
+    public void onWorld(PacketWorldC2S world) {
+        String actualWorld = server.getPlayerManager().getPlayer(player.player).world.getRegistryKey().getValue().getPath();
+        if (!world.world.equals(actualWorld)) {
+            VoxelShareServer.logServerMessage("Setting " + player.player + " world to " + actualWorld);
+            player.sendPacket(server, new PacketWorldS2C(actualWorld));
+        } else {
+            VoxelShareServer.logServerMessage("world name from " + player.player + "already correct.");
+        }
     }
 
     @Override

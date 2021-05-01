@@ -1,0 +1,17 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "xyz.wagyourtail.voxelmapapi.mixin",
+  "compatibilityLevel": "JAVA_8",
+  "client": [
+    "waypoints.MixinCommandUtils",
+    "waypoints.MixinGuiAddWaypoint",
+    "waypoints.MixinGuiPersistentMap",
+    "waypoints.MixinGuiWaypoints",
+    "waypoints.MixinWaypoint",
+    "waypoints.MixinWaypointManager"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

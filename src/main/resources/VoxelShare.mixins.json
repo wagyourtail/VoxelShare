@@ -3,9 +3,11 @@
   "minVersion": "0.8",
   "package": "xyz.wagyourtail.voxelshare.mixin",
   "compatibilityLevel": "JAVA_8",
-  "mixins": [
-  ],
   "client": [
+    "MixinMinecraftClient"
+  ],
+  "mixins": [
+    "MixinPlayerManager"
   ],
   "injectors": {
     "defaultRequire": 1

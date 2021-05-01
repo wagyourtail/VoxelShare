@@ -5,26 +5,25 @@ import xyz.wagyourtail.voxelshare.packets.PacketOpcodes;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 
-/**
- * [byte OpCode, String server, String world, String:name, int: x, int: y, int: z, byte: enabled, int:
- * red, int: green, int: blue, String: suffix, String: dimensions]
- */
 public class PacketWaypointC2S extends Packet {
     public static final byte OPCODE = PacketOpcodes.Waypoint.opcode;
     public final String server, world, name;
     public final int x, y, z;
+    public final long editTime;
     public final boolean enabled;
     public final int red, green, blue;
     public final String suffix, dimensions;
 
-    public PacketWaypointC2S(String server, String world, String name, int x, int y, int z, boolean enabled, int red, int green, int blue, String suffix, String dimension) {
+    public PacketWaypointC2S(String server, String world, String name, int x, int y, int z, long editTime, boolean enabled, int red, int green, int blue, String suffix, String dimension) {
         this.server = server;
         this.world = world;
         this.name = name;
         this.x = x;
         this.y = y;
         this.z = z;
+        this.editTime = editTime;
         this.enabled = enabled;
         this.red = red;
         this.green = green;
@@ -44,6 +43,7 @@ public class PacketWaypointC2S extends Packet {
         this.x = buff.getInt();
         this.y = buff.getInt();
         this.z = buff.getInt();
+        this.editTime = buff.getLong();
         this.enabled = buff.get() != 0;
         this.red = buff.getInt();
         this.green = buff.getInt();
@@ -69,7 +69,7 @@ public class PacketWaypointC2S extends Packet {
         byte[] name = this.name.getBytes(StandardCharsets.UTF_8);
         byte[] suffix = this.suffix.getBytes(StandardCharsets.UTF_8);
         byte[] dimensions = this.dimensions.getBytes(StandardCharsets.UTF_8);
-        ByteBuffer buff = ByteBuffer.allocate(Integer.BYTES * 10 + world.length + name.length + suffix.length + dimensions.length + 1);
+        ByteBuffer buff = ByteBuffer.allocate(Long.BYTES + Integer.BYTES * 10 + world.length + name.length + suffix.length + dimensions.length + 1);
         buff.putInt(world.length);
         buff.put(world);
         buff.putInt(name.length);
@@ -77,6 +77,7 @@ public class PacketWaypointC2S extends Packet {
         buff.putInt(x);
         buff.putInt(y);
         buff.putInt(z);
+        buff.putLong(editTime);
         buff.put((byte) (enabled ? 1 : 0));
         buff.putInt(red);
         buff.putInt(green);
@@ -87,4 +88,18 @@ public class PacketWaypointC2S extends Packet {
         buff.put(dimensions);
         return buff;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof PacketWaypointC2S)) return false;
+        PacketWaypointC2S that = (PacketWaypointC2S) o;
+        return x == that.x && y == that.y && z == that.z && enabled == that.enabled && red == that.red && green == that.green && blue == that.blue && server.equals(that.server) && world.equals(that.world) && name.equals(that.name) && suffix.equals(that.suffix) && dimensions.equals(that.dimensions);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(server, world, name, x, y, z, enabled, red, green, blue, suffix, dimensions);
+    }
+
 }

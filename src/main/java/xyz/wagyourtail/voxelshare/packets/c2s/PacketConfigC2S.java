@@ -6,7 +6,7 @@ import xyz.wagyourtail.voxelshare.packets.PacketOpcodes;
 import java.nio.ByteBuffer;
 
 public class PacketFrequencyC2S extends Packet {
-    public static final byte OPCODE = PacketOpcodes.Position.opcode;
+    public static final byte OPCODE = PacketOpcodes.ConfigSync.opcode;
     public final int waypointFrequency, regionFrequency, positionFrequency;
 
     public PacketFrequencyC2S(int waypointFrequency, int regionFrequency, int positionFrequency) {

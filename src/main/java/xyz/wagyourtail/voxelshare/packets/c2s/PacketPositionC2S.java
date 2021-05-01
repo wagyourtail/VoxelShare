@@ -34,18 +34,15 @@ public class PacketPositionC2S extends Packet {
     public ByteBuffer writePacket() {
         byte[] server = this.server.getBytes(StandardCharsets.UTF_8);
         byte[] world = this.world.getBytes(StandardCharsets.UTF_8);
-        if (server != null && world != null) {
-            ByteBuffer buff = ByteBuffer.allocate(world.length + server.length + Integer.BYTES * 4 + 1);
-            buff.put(OPCODE);
-            buff.putInt(server.length);
-            buff.put(server);
-            buff.putInt(world.length);
-            buff.put(world);
-            buff.putInt(x);
-            buff.putInt(z);
-            return buff;
-        }
-        return null;
+        ByteBuffer buff = ByteBuffer.allocate(world.length + server.length + Integer.BYTES * 4 + 1);
+        buff.put(OPCODE);
+        buff.putInt(server.length);
+        buff.put(server);
+        buff.putInt(world.length);
+        buff.put(world);
+        buff.putInt(x);
+        buff.putInt(z);
+        return buff;
     }
 
 }

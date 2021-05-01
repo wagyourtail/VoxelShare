@@ -2,7 +2,6 @@ package xyz.wagyourtail.voxelshare.client;
 
 import xyz.wagyourtail.voxelshare.BasePacketListener;
 import xyz.wagyourtail.voxelshare.packets.PacketOpcodes;
-import xyz.wagyourtail.voxelshare.packets.c2s.PacketFrequencyC2S;
 import xyz.wagyourtail.voxelshare.packets.s2c.*;
 
 import java.nio.ByteBuffer;

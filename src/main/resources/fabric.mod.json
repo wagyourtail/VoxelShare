@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "id": "VoxelShare",
+  "id": "voxelshare",
   "version": "${version}",
   "name": "VoxelShare",
   "description": "share voxelmap data between multiple clients",
@@ -25,7 +25,8 @@
     ]
   },
   "mixins": [
-    "VoxelShare.mixins.json"
+    "VoxelShare.mixins.json",
+    "VoxelMapApi.mixins.json"
   ],
   "depends": {
     "fabricloader": ">=0.11.3",

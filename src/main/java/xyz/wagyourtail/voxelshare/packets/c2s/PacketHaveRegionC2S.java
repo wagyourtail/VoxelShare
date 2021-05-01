@@ -5,6 +5,7 @@ import xyz.wagyourtail.voxelshare.packets.PacketOpcodes;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 
 public class PacketHaveRegionC2S extends Packet {
     public static final byte OPCODE = PacketOpcodes.HaveRegion.opcode;
@@ -51,4 +52,18 @@ public class PacketHaveRegionC2S extends Packet {
         buff.putInt(z);
         return buff;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof PacketHaveRegionC2S)) return false;
+        PacketHaveRegionC2S that = (PacketHaveRegionC2S) o;
+        return updateTime == that.updateTime && x == that.x && z == that.z && server.equals(that.server) && world.equals(that.world);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(server, world, updateTime, x, z);
+    }
+
 }

@@ -7,8 +7,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public enum PacketOpcodes {
-    //OX: special
-    UNKNOWN(0x00), PING(0x01), Frequency(0x02),
+    //OX: control
+    Error(0x00), PING(0x01), ConfigSync(0x02), World(0x03),
 
     //1X: player packets
     Player(0x10), Position(0x11), Positions(0x12),
@@ -18,7 +18,7 @@ public enum PacketOpcodes {
     HaveRegion(0x23), HaveRegions(0x24),
 
     //3X: waypoint packets
-    Waypoint(0x30), Waypoints(0x31), DeleteWaypoint(0x32), MoveWaypoint(0x33);
+    Waypoint(0x30), Waypoints(0x31), DeleteWaypoint(0x32), EditWaypoint(0x33);
 
 
     private static final Map<Byte, PacketOpcodes> opcodes = Arrays.stream(values()).collect(Collectors.toMap((e) -> e.opcode, Function.identity()));

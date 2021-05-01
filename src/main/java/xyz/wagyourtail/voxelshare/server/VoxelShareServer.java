@@ -1,25 +1,61 @@
 package xyz.wagyourtail.voxelshare.server;
 
 import net.fabricmc.api.DedicatedServerModInitializer;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.network.PacketContext;
 import net.fabricmc.fabric.api.network.ServerSidePacketRegistry;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.server.MinecraftServer;
 import xyz.wagyourtail.voxelshare.VoxelShare;
+import xyz.wagyourtail.voxelshare.events.server.PlayerJoinEvent;
+import xyz.wagyourtail.voxelshare.events.server.PlayerLeaveEvent;
+import xyz.wagyourtail.voxelshare.packets.PacketOpcodes;
+import xyz.wagyourtail.voxelshare.packets.s2c.PacketPingS2C;
 
-import java.util.HashMap;
+import java.nio.ByteBuffer;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
 
 public class VoxelShareServer implements DedicatedServerModInitializer {
-    public static Map<UUID, AbstractServerPacketListener> serverPacketListners = new HashMap<>();
+    public static final Map<UUID, AbstractServerPacketListener> serverPacketListners = new LinkedHashMap<>();
 
     @Override
     public void onInitializeServer() {
-        ServerSidePacketRegistry.INSTANCE.register(VoxelShare.packetId, this::onClientPacket);
+        registerEvents();
+        ServerTickEvents.END_SERVER_TICK.register(this::onTick);
     }
 
-    public void onClientPacket(PacketContext context, PacketByteBuf buffer) {
-        serverPacketListners.computeIfAbsent(context.getPlayer().getUuid(), DedicatedServerPacketListener::new)
-            .onPacket(buffer.nioBuffer());
+    public static void logServerMessage(String message) {
+        VoxelShare.LOGGER.info("[VoxelShareServer] " + message);
+    }
+
+    public void registerEvents() {
+        ServerSidePacketRegistry.INSTANCE.register(VoxelShare.packetId, this::onClientPacket);
+        PlayerJoinEvent.EVENT.register(this::onPlayerJoin);
+        PlayerLeaveEvent.EVENT.register(this::onPlayerLeave);
+    }
+
+    protected void onPlayerJoin(PlayerEntity player, MinecraftServer mc) {
+        serverPacketListners.computeIfAbsent(player.getUuid(), uuid -> new DedicatedServerPacketListener(uuid, mc)).player.sendPacket(mc, new PacketPingS2C());
+    }
+
+    protected void onPlayerLeave(PlayerEntity player, MinecraftServer mc) {
+        serverPacketListners.remove(player.getUuid());
+    }
+
+    protected void onTick(MinecraftServer nms) {
+
+        for (AbstractServerPacketListener player : serverPacketListners.values()) {
+            player.player.tick(nms);
+        }
+    }
+
+    protected void onClientPacket(PacketContext context, PacketByteBuf buffer) {
+        ByteBuffer buff = buffer.nioBuffer();
+
+        serverPacketListners.computeIfAbsent(context.getPlayer().getUuid(), uuid -> new DedicatedServerPacketListener(uuid, context.getPlayer().getServer()))
+            .onPacket(PacketOpcodes.getByOpcode(buff.get()), buff);
     }
 }
