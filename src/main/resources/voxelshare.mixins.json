@@ -1,0 +1,18 @@
+{
+	"required": true,
+	"package": "xyz.wagyourtail.voxelshare.mixins",
+	"compatibilityLevel": "JAVA_8",
+	"client": [
+		"pos.MixinGuiPersistentMap",
+		"pos.MixinVoxelMap",
+		"region.MixinCachedRegion",
+		"region.MixinPersistentMap",
+		"waypoint.MixinGuiWaypoints",
+		"waypoint.MixinWaypoint",
+		"waypoint.MixinWaypointItem",
+		"waypoint.MixinWaypointManager"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
+}
