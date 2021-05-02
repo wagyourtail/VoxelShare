@@ -6,5 +6,5 @@ public class ConfigOptions {
     public boolean sendPosition = true;
     public int waypointFrequency = 1200;
     public int regionFrequency = 1200;
-    public int positionFrequency = 1200;
+    public int positionFrequency = 10;
 }

@@ -8,7 +8,6 @@ import java.util.List;
 
 public abstract class AbstractServerEndpoint extends Endpoint<MinecraftClient> {
     public final String serverName;
-    public List<Region> serverRegions = null;
     public long waypointSendTime = 0;
     public long regionSendTime = 0;
 

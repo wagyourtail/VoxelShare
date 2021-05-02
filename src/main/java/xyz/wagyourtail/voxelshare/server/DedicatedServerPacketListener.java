@@ -35,32 +35,32 @@ public class DedicatedServerPacketListener extends AbstractServerPacketListener 
 
     @Override
     public void onRegion(PacketRegionC2S region) {
-
+        //TODO
     }
 
     @Override
     public void onRequestRegion(PacketRequestRegionC2S requestRegion) {
-
+        //TODO
     }
 
     @Override
     public void onHaveRegion(PacketHaveRegionC2S haveRegion) {
-
+        //TODO
     }
 
     @Override
     public void onWaypoint(PacketWaypointC2S waypoint) {
-
+        //TODO
     }
 
     @Override
     public void onDeleteWaypoint(PacketDeleteWaypointC2S deleteWaypoint) {
-
+        //TODO
     }
 
     @Override
     public void onmoveWaypoint(PacketEditWaypointC2S moveWaypoint) {
-
+        //TODO
     }
 
     @Override
@@ -71,10 +71,10 @@ public class DedicatedServerPacketListener extends AbstractServerPacketListener 
 
     @Override
     public void onWorld(PacketWorldC2S world) {
-        String actualWorld = server.getPlayerManager().getPlayer(player.player).world.getRegistryKey().getValue().getPath();
+        String actualWorld = "";
         if (!world.world.equals(actualWorld)) {
             VoxelShareServer.logServerMessage("Setting " + player.player + " world to " + actualWorld);
-            player.sendPacket(server, new PacketWorldS2C(actualWorld));
+            player.sendPacket(server, new PacketWorldS2C(world.server, actualWorld));
         } else {
             VoxelShareServer.logServerMessage("world name from " + player.player + "already correct.");
         }

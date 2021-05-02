@@ -10,8 +10,10 @@ import net.minecraft.server.MinecraftServer;
 import xyz.wagyourtail.voxelshare.VoxelShare;
 import xyz.wagyourtail.voxelshare.events.server.PlayerJoinEvent;
 import xyz.wagyourtail.voxelshare.events.server.PlayerLeaveEvent;
+import xyz.wagyourtail.voxelshare.packets.Packet;
 import xyz.wagyourtail.voxelshare.packets.PacketOpcodes;
 import xyz.wagyourtail.voxelshare.packets.s2c.PacketPingS2C;
+import xyz.wagyourtail.voxelshare.packets.s2c.PacketPlayerLeaveS2C;
 
 import java.nio.ByteBuffer;
 import java.util.LinkedHashMap;
@@ -42,7 +44,12 @@ public class VoxelShareServer implements DedicatedServerModInitializer {
     }
 
     protected void onPlayerLeave(PlayerEntity player, MinecraftServer mc) {
+        logServerMessage("Player " + player.getUuid() + " left.");
         serverPacketListners.remove(player.getUuid());
+        Packet leave = new PacketPlayerLeaveS2C(player.getUuid());
+        for (AbstractServerPacketListener pkt : serverPacketListners.values()) {
+            pkt.player.sendPacket(mc, leave);
+        }
     }
 
     protected void onTick(MinecraftServer nms) {

@@ -14,7 +14,7 @@ import java.util.Iterator;
 @Mixin(CommandUtils.class)
 public class MixinCommandUtils {
 
-    @Inject(method = "waypointClicked", at = @At(value = "INVOKE", target = "Lcom/mamiyaotaru/voxelmap/gui/GuiAddWaypoint;<init>(Lcom/mamiyaotaru/voxelmap/gui/IGuiWaypoints;Lcom/mamiyaotaru/voxelmap/interfaces/IVoxelMap;Lcom/mamiyaotaru/voxelmap/util/Waypoint;Z)V", ordinal = 1), locals = LocalCapture.CAPTURE_FAILHARD)
+    @Inject(method = "waypointClicked", at = @At(value = "INVOKE", target = "Lcom/mamiyaotaru/voxelmap/gui/GuiAddWaypoint;<init>(Lcom/mamiyaotaru/voxelmap/gui/IGuiWaypoints;Lcom/mamiyaotaru/voxelmap/interfaces/IVoxelMap;Lcom/mamiyaotaru/voxelmap/util/Waypoint;Z)V", ordinal = 0), locals = LocalCapture.CAPTURE_FAILHARD)
     private static void onClickWaypoint(String command, CallbackInfo ci, boolean contron, String details, Waypoint newWaypoint, Iterator var4, Waypoint existingWaypoint) {
         IWaypoint wp = (IWaypoint) existingWaypoint;
         wp.setOld(wp.clone());

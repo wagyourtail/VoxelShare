@@ -45,7 +45,7 @@ public class PacketWaypointsC2S extends PacketGroup<PacketWaypointC2S> {
         buff.put(OPCODE);
         buff.putInt(server.length);
         buff.put(server);
-        waypoints.forEach(buff::put);
+        waypoints.forEach(e -> buff.put((ByteBuffer) e.rewind()));
         return buff;
     }
 

@@ -2,21 +2,21 @@ package xyz.wagyourtail.voxelshare.client.endpoints;
 
 import io.netty.buffer.Unpooled;
 import net.fabricmc.fabric.api.network.ClientSidePacketRegistry;
+import net.fabricmc.fabric.api.network.PacketContext;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.packet.c2s.play.CustomPayloadC2SPacket;
 import xyz.wagyourtail.voxelmapapi.IWaypoint;
+import xyz.wagyourtail.voxelmapapi.Region;
 import xyz.wagyourtail.voxelmapapi.VoxelMapApi;
 import xyz.wagyourtail.voxelshare.VoxelShare;
 import xyz.wagyourtail.voxelshare.client.VoxelShareClient;
 import xyz.wagyourtail.voxelshare.packets.Packet;
-import xyz.wagyourtail.voxelshare.packets.c2s.PacketDeleteWaypointC2S;
-import xyz.wagyourtail.voxelshare.packets.c2s.PacketEditWaypointC2S;
-import xyz.wagyourtail.voxelshare.packets.c2s.PacketWaypointC2S;
-import xyz.wagyourtail.voxelshare.packets.c2s.PacketWaypointsC2S;
+import xyz.wagyourtail.voxelshare.packets.c2s.*;
 
 import java.nio.ByteBuffer;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class DedicatedServerEndpoint extends AbstractServerEndpoint {
@@ -31,6 +31,13 @@ public class DedicatedServerEndpoint extends AbstractServerEndpoint {
         PacketByteBuf packet = new PacketByteBuf(Unpooled.buffer());
         packet.writeBytes((ByteBuffer) pkt.writePacket().rewind());
         ClientSidePacketRegistry.INSTANCE.sendToServer(VoxelShare.packetId, packet);
+    }
+
+    @Override
+    public void sendPacket(PacketContext ctx, Packet pkt) {
+        PacketByteBuf packet = new PacketByteBuf(Unpooled.buffer());
+        packet.writeBytes((ByteBuffer) pkt.writePacket().rewind());
+        ((ClientPlayNetworkHandler)ctx).sendPacket(new CustomPayloadC2SPacket(VoxelShare.packetId, packet));
     }
 
     @Override
@@ -55,11 +62,24 @@ public class DedicatedServerEndpoint extends AbstractServerEndpoint {
             deleted.forEach(e -> sendPacket(mc, e));
             edited.forEach(e -> sendPacket(mc, e));
         }
+        waypointSendTime = System.currentTimeMillis();
     }
 
+    //TODO: test
     @Override
     public void doRegions(MinecraftClient mc) {
-
+        String server = VoxelMapApi.getCurrentServer();
+        for (Map.Entry<String, Map<String, Set<Region>>> reg : VoxelMapApi.getRegions().entrySet()) {
+            String world = reg.getKey();
+            for (Map.Entry<String, Set<Region>> reg2 : reg.getValue().entrySet()) {
+                List<PacketHaveRegionC2S> regions = new LinkedList<>();
+                for (Region region : reg2.getValue()) {
+                    regions.add(new PacketHaveRegionC2S(server, world, reg2.getKey(), region.getTime(), region.x, region.z));
+                }
+                sendPacket(mc, new PacketHaveRegionsC2S(server, world, reg.getKey(), regions));
+            }
+        }
+        regionSendTime = System.currentTimeMillis();
     }
 
     @Override

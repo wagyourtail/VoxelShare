@@ -6,6 +6,7 @@ import com.mamiyaotaru.voxelmap.util.Waypoint;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.gen.Accessor;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -31,6 +32,9 @@ public abstract class MixinWaypointManager implements IWaypointManager {
     @Unique long editTime;
     @Unique boolean sync;
     @Unique List<Waypoint> deletedWaypoints = new LinkedList<>();
+
+    @Accessor
+    public abstract String getCurrentSubWorldName();
 
     //LOAD
     @Inject(method = "loadWaypointsExtensible", at = @At(value = "INVOKE", target = "Ljava/util/TreeSet;<init>()V"))
@@ -83,5 +87,6 @@ public abstract class MixinWaypointManager implements IWaypointManager {
     public void clearDeletedWaypoints() {
         deletedWaypoints.clear();
     }
+
 
 }

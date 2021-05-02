@@ -1,5 +1,6 @@
 package xyz.wagyourtail.voxelshare;
 
+import net.fabricmc.fabric.api.network.PacketContext;
 import xyz.wagyourtail.voxelshare.packets.Packet;
 
 public abstract class Endpoint<T> {
@@ -17,10 +18,14 @@ public abstract class Endpoint<T> {
     }
 
     public void tick(T mc) {
-        if (i % waypointFrequency == 0) doWaypoints(mc);
-        if (i % regionFrequency == 0) doRegions(mc);
-        if (i % positionFrequency == 0) doPositions(mc);
-        ++i;
+        try {
+            if (i % waypointFrequency == 0) doWaypoints(mc);
+            if (i % regionFrequency == 0) doRegions(mc);
+            if (i % positionFrequency == 0) doPositions(mc);
+            ++i;
+        } catch (Throwable ex) {
+            ex.printStackTrace();
+        }
     }
 
     public abstract void doWaypoints(T mc);
@@ -30,4 +35,6 @@ public abstract class Endpoint<T> {
     public abstract void doPositions(T mc);
 
     public abstract void sendPacket(T mc, Packet buff);
+
+    public abstract void sendPacket(PacketContext ctx, Packet buff);
 }

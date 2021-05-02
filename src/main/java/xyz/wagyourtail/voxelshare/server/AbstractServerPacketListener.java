@@ -78,11 +78,12 @@ public abstract class AbstractServerPacketListener extends BasePacketListener {
             case Player:
                 onPlayer(new PacketSetPlayerC2S(buff));
                 break;
-            case Position:
-                onPosition(new PacketPositionC2S(buff));
-                break;
+            case PlayerLeave:
             case Positions:
                 throwWrongWay();
+                break;
+            case Position:
+                onPosition(new PacketPositionC2S(buff));
                 break;
             case RegionData:
                 onRegion(new PacketRegionC2S(buff));

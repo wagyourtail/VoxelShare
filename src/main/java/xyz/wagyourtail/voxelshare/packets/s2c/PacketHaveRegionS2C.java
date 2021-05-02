@@ -7,16 +7,16 @@ import java.nio.ByteBuffer;
 public class PacketHaveRegionS2C extends PacketHaveRegionC2S {
 
 
-    public PacketHaveRegionS2C(String server, String world, long updateTime, int x, int z) {
-        super(server, world, updateTime, x, z);
+    public PacketHaveRegionS2C(String server, String world, String dimension, long updateTime, int x, int z) {
+        super(server, world, dimension, updateTime, x, z);
     }
 
     public PacketHaveRegionS2C(ByteBuffer buff) {
         super(buff);
     }
 
-    public PacketHaveRegionS2C(String server, String world, ByteBuffer buff) {
-        super(server, world, buff);
+    public PacketHaveRegionS2C(String server, String world, String dimension, ByteBuffer buff) {
+        super(server, world, dimension, buff);
     }
 
 }

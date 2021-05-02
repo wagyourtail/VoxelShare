@@ -10,6 +10,5 @@ public interface IWaypoint {
     void setOld(Waypoint point);
     void clearOld();
     Waypoint getOld();
-
     Waypoint clone();
 }

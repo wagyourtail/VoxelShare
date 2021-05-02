@@ -20,22 +20,25 @@ public class ClientPacketListener extends AbstractClientPacketListener {
 
     @Override
     public void onPositionPacket(PacketPositionS2C position) {
-
+        checkWorld(position.world);
+        synchronized (positions) {
+            positions.put(position.player, position);
+        }
     }
 
     @Override
     public void onRegionData(PacketRegionS2C region) {
-
+        //TODO
     }
 
     @Override
     public void onRequestRegion(PacketRequestRegionS2C requestRegion) {
-
+        //TODO
     }
 
     @Override
     public void onHaveRegion(PacketHaveRegionS2C haveRegion) {
-
+        //TODO
     }
 
     @Override
@@ -70,6 +73,13 @@ public class ClientPacketListener extends AbstractClientPacketListener {
     public void onWorld(PacketWorldS2C world) {
         VoxelMapApi.setCurrentWorld(world.world);
         VoxelShareClient.logToChat("World name set to " + world.world);
+    }
+
+    @Override
+    public void onPlayerLeave(PacketPlayerLeaveS2C player) {
+        synchronized (positions) {
+            positions.remove(player.player);
+        }
     }
 
 }

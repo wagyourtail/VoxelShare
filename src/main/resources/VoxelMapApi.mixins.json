@@ -4,11 +4,16 @@
   "package": "xyz.wagyourtail.voxelmapapi.mixin",
   "compatibilityLevel": "JAVA_8",
   "client": [
+    "events.MixinWaypointManager",
+    "position.MixinGuiPersistentMap",
+    "region.MixinBlockStateParser",
+    "region.MixinCachedRegion",
     "waypoints.MixinCommandUtils",
     "waypoints.MixinGuiAddWaypoint",
     "waypoints.MixinGuiPersistentMap",
     "waypoints.MixinGuiWaypoints",
     "waypoints.MixinWaypoint",
+    "waypoints.MixinWaypointItem",
     "waypoints.MixinWaypointManager"
   ],
   "injectors": {

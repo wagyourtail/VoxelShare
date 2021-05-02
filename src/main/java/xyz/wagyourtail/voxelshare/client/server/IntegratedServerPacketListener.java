@@ -40,5 +40,5 @@ public class IntegratedServerPacketListener extends DedicatedServerPacketListene
         VoxelMapApi.removeWaypoint(point);
     }
 
-
+    //TODO: override and implement region packet listeners
 }

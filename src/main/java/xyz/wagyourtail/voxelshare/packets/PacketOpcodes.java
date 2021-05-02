@@ -11,7 +11,7 @@ public enum PacketOpcodes {
     Error(0x00), PING(0x01), ConfigSync(0x02), World(0x03),
 
     //1X: player packets
-    Player(0x10), Position(0x11), Positions(0x12),
+    Player(0x10), Position(0x11), Positions(0x12), PlayerLeave(0x13),
 
     //2X: region packets
     RegionData(0x20), RequestRegion(0x21), RequestRegions(0x22),

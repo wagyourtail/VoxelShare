@@ -18,6 +18,7 @@ import net.minecraft.util.Formatting;
 import net.minecraft.world.dimension.DimensionType;
 import xyz.wagyourtail.voxelmapapi.IWaypoint;
 import xyz.wagyourtail.voxelmapapi.VoxelMapApi;
+import xyz.wagyourtail.voxelmapapi.events.SetWorldEvent;
 import xyz.wagyourtail.voxelshare.VoxelShare;
 import xyz.wagyourtail.voxelshare.client.endpoints.DedicatedServerEndpoint;
 import xyz.wagyourtail.voxelshare.client.endpoints.IntegratedServerEndpoint;
@@ -50,6 +51,7 @@ public class VoxelShareClient extends VoxelShareServer implements ClientModIniti
         super.registerEvents();
         ClientSidePacketRegistry.INSTANCE.register(VoxelShare.packetId, this::onServerPacket);
         LeaveServerEvent.EVENT.register(this::onDisconnect);
+        SetWorldEvent.EVENT.register(this::onWorldChange);
     }
 
     protected void onTick(MinecraftClient mc) {
@@ -73,6 +75,12 @@ public class VoxelShareClient extends VoxelShareServer implements ClientModIniti
         VoxelMapApi.clearDeletedWaypoints();
     }
 
+    protected void onWorldChange(String world) {
+        if (clientPacketListener != null) {
+            clientPacketListener.server.sendPacket(MinecraftClient.getInstance(), new PacketWorldC2S(VoxelMapApi.getCurrentServer(), world));
+        }
+    }
+
     @Override
     protected void onPlayerJoin(PlayerEntity player, MinecraftServer mc) {
         serverPacketListners.computeIfAbsent(player.getUuid(),uuid -> new IntegratedServerPacketListener(uuid, mc)).player.sendPacket(mc, new PacketPingS2C());
@@ -81,32 +89,30 @@ public class VoxelShareClient extends VoxelShareServer implements ClientModIniti
     private void onServerPacket(PacketContext context, PacketByteBuf buffer) {
         if (clientPacketListener == null) {
             MinecraftClient mc = MinecraftClient.getInstance();
-            setClientPacketListener(mc, VoxelMapApi.getCurrentServer());
-        } else if (!clientPacketListener.server.getServerName().equals(VoxelMapApi.getCurrentServer())) {
+            setClientPacketListener(context, mc, VoxelMapApi.getCurrentServer());
+        } else if (!(clientPacketListener.server instanceof DedicatedServerEndpoint) && !clientPacketListener.server.getServerName().equals(VoxelMapApi.getCurrentServer())) {
             MinecraftClient mc = MinecraftClient.getInstance();
-            setClientPacketListener(mc, VoxelMapApi.getCurrentServer());
+            setClientPacketListener(context, mc, VoxelMapApi.getCurrentServer());
         }
 
         ByteBuffer buff = buffer.nioBuffer();
         clientPacketListener.onPacket(PacketOpcodes.getByOpcode(buff.get()), buff);
     }
 
-    private void setClientPacketListener(MinecraftClient mc, String server) {
+    private void setClientPacketListener(PacketContext context, MinecraftClient mc, String server) {
         if (mc.isIntegratedServerRunning()) {
             clientPacketListener = new ClientPacketListener(new IntegratedServerEndpoint(server), mc);
         } else {
             clientPacketListener = new ClientPacketListener(new DedicatedServerEndpoint(server), mc);
         }
 
-        dedicatedServerAuthPackets(mc);
+        dedicatedServerAuthPackets(context, mc);
         logToChat("Server-side component detected.");
     }
 
-    private void dedicatedServerAuthPackets(MinecraftClient mc) {
-        mc.execute(() -> {
-            clientPacketListener.server.sendPacket(mc, new PacketWorldC2S(VoxelMapApi.getCurrentWorld()));
-            clientPacketListener.server.sendPacket(mc, new PacketConfigC2S(VoxelShare.config));
-        });
+    private void dedicatedServerAuthPackets(PacketContext context, MinecraftClient mc) {
+        clientPacketListener.server.sendPacket(context, new PacketWorldC2S(VoxelMapApi.getCurrentServer(), VoxelMapApi.getCurrentWorld()));
+        clientPacketListener.server.sendPacket(context, new PacketConfigC2S(VoxelShare.config));
     }
 
     @Override

@@ -3,16 +3,15 @@ package xyz.wagyourtail.voxelshare.client.server;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.server.MinecraftServer;
 import xyz.wagyourtail.voxelmapapi.IWaypoint;
+import xyz.wagyourtail.voxelmapapi.Region;
 import xyz.wagyourtail.voxelmapapi.VoxelMapApi;
 import xyz.wagyourtail.voxelshare.client.VoxelShareClient;
-import xyz.wagyourtail.voxelshare.packets.c2s.PacketDeleteWaypointC2S;
-import xyz.wagyourtail.voxelshare.packets.c2s.PacketEditWaypointC2S;
-import xyz.wagyourtail.voxelshare.packets.c2s.PacketWaypointC2S;
-import xyz.wagyourtail.voxelshare.packets.c2s.PacketWaypointsC2S;
+import xyz.wagyourtail.voxelshare.packets.c2s.*;
 import xyz.wagyourtail.voxelshare.server.DedicatedClientEndpoint;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -26,8 +25,7 @@ public class IntegratedClientEndpoint extends DedicatedClientEndpoint {
         assert MinecraftClient.getInstance().player != null;
         if (MinecraftClient.getInstance().player.getUuid().equals(player)) return;
 
-
-        //TODO:
+        //TODO
     }
 
     @Override
@@ -55,6 +53,8 @@ public class IntegratedClientEndpoint extends DedicatedClientEndpoint {
             deleted.forEach(e -> sendPacket(mc, e));
             edited.forEach(e -> sendPacket(mc, e));
         }
+
+        waypointSendTime = System.currentTimeMillis();
     }
 
 }

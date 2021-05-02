@@ -9,11 +9,15 @@ import xyz.wagyourtail.voxelshare.packets.PacketOpcodes;
 import xyz.wagyourtail.voxelshare.packets.s2c.*;
 
 import java.nio.ByteBuffer;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 public abstract class AbstractClientPacketListener extends BasePacketListener {
     public final AbstractServerEndpoint server;
     public final MinecraftClient mc;
+    public final Map<UUID, PacketPositionS2C> positions = new LinkedHashMap<>();
 
     public AbstractClientPacketListener(AbstractServerEndpoint server, MinecraftClient mc) {
         this.server = server;
@@ -66,13 +70,21 @@ public abstract class AbstractClientPacketListener extends BasePacketListener {
 
     public void checkWorld(String world) {
         if (!world.equals(VoxelMapApi.getCurrentWorld())) {
-            throw new IllegalStateException("wrong world id for packet");
+            throw new IllegalStateException("wrong world id for packet found: " + world + ", expected: " + VoxelMapApi.getCurrentWorld());
+        }
+    }
+
+    public void checkDimension(String dimension) {
+        if (!dimension.equals(mc.world.getRegistryKey().getValue().getPath())) {
+            throw new IllegalStateException("wrong dimension id for packet found: " + dimension + ", expected: " + mc.world.getRegistryKey().getValue().getPath());
         }
     }
 
     public abstract void onFrequency(PacketConfigS2C frequency);
 
     public abstract void onWorld(PacketWorldS2C world);
+
+    public abstract void onPlayerLeave(PacketPlayerLeaveS2C player);
 
     @Override
     public void onPacket(PacketOpcodes opcode, ByteBuffer buff) throws UnsupportedOperationException {
@@ -88,6 +100,9 @@ public abstract class AbstractClientPacketListener extends BasePacketListener {
                 break;
             case Player:
                 throwWrongWay();
+                break;
+            case PlayerLeave:
+                onPlayerLeave(new PacketPlayerLeaveS2C(buff));
                 break;
             case Position:
                 onPositionPacket(new PacketPositionS2C(buff));

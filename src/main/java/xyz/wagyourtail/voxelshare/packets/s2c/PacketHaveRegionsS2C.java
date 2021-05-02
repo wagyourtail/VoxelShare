@@ -9,8 +9,8 @@ import java.util.List;
 public class PacketHaveRegionsS2C extends PacketHaveRegionsC2S {
 
     @SuppressWarnings({"unchecked","rawtypes"})
-    public PacketHaveRegionsS2C(String server, String world, List<PacketHaveRegionS2C> regions) {
-        super(server, world, (List) regions);
+    public PacketHaveRegionsS2C(String server, String world, String dimension, List<PacketHaveRegionS2C> regions) {
+        super(server, world, dimension, (List) regions);
     }
 
     public PacketHaveRegionsS2C(ByteBuffer buff) {
@@ -19,7 +19,7 @@ public class PacketHaveRegionsS2C extends PacketHaveRegionsC2S {
 
     @Override
     public PacketHaveRegionC2S createChild(ByteBuffer buff) {
-        return new PacketHaveRegionS2C(server, world, buff);
+        return new PacketHaveRegionS2C(server, world, dimension, buff);
     }
 
 }

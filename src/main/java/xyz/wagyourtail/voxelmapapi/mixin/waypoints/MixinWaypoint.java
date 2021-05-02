@@ -3,6 +3,7 @@ package xyz.wagyourtail.voxelmapapi.mixin.waypoints;
 import com.mamiyaotaru.voxelmap.util.DimensionContainer;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import xyz.wagyourtail.voxelmapapi.IWaypoint;
@@ -66,6 +67,22 @@ public class MixinWaypoint implements IWaypoint {
         Waypoint clonePoint = new Waypoint(name, x, z, y, enabled, red, green, blue, imageSuffix, world, (TreeSet<DimensionContainer>) dimensions.clone());
         ((IWaypoint)clonePoint).setEditTime(editTime);
         return clonePoint;
+    }
+
+    /**
+     * @author wagyourtail
+     * @reason dont rely on equal dimensions
+     */
+    @Overwrite
+    public boolean equals(Object otherObject) {
+        if (this == otherObject) {
+            return true;
+        } else if (!(otherObject instanceof Waypoint)) {
+            return false;
+        } else {
+            Waypoint otherWaypoint = (Waypoint)otherObject;
+            return this.name.equals(otherWaypoint.name) && this.imageSuffix.equals(otherWaypoint.imageSuffix) && this.world.equals(otherWaypoint.world) && this.x == otherWaypoint.x && this.y == otherWaypoint.y && this.z == otherWaypoint.z && this.red == otherWaypoint.red && this.green == otherWaypoint.green && this.blue == otherWaypoint.blue;
+        }
     }
 
 }
