@@ -4,12 +4,14 @@ import net.minecraft.server.MinecraftServer;
 import xyz.wagyourtail.voxelshare.VoxelShare;
 import xyz.wagyourtail.voxelshare.packets.c2s.*;
 import xyz.wagyourtail.voxelshare.packets.s2c.PacketConfigS2C;
+import xyz.wagyourtail.voxelshare.packets.s2c.PacketRequestRegionS2C;
 import xyz.wagyourtail.voxelshare.packets.s2c.PacketWorldS2C;
 
+import java.util.LinkedList;
+import java.util.List;
 import java.util.UUID;
 
 public class DedicatedServerPacketListener extends AbstractServerPacketListener {
-
     public DedicatedServerPacketListener(UUID player, MinecraftServer server) {
         super(new DedicatedClientEndpoint(player), server);
     }
@@ -46,6 +48,11 @@ public class DedicatedServerPacketListener extends AbstractServerPacketListener 
     @Override
     public void onHaveRegion(PacketHaveRegionC2S haveRegion) {
         //TODO
+    }
+
+    @Override
+    public void onHaveRegions(PacketHaveRegionsC2S haveRegions) {
+
     }
 
     @Override

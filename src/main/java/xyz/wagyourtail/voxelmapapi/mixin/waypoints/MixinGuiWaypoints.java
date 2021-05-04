@@ -6,7 +6,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import xyz.wagyourtail.voxelmapapi.IWaypoint;
+import xyz.wagyourtail.voxelmapapi.accessor.IWaypoint;
 
 @Mixin(value = GuiWaypoints.class, remap = false)
 public class MixinGuiWaypoints {

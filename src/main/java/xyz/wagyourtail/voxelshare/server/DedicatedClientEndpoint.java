@@ -10,7 +10,6 @@ import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.math.BlockPos;
 import xyz.wagyourtail.voxelshare.Endpoint;
-import xyz.wagyourtail.voxelshare.Region;
 import xyz.wagyourtail.voxelshare.VoxelShare;
 import xyz.wagyourtail.voxelshare.packets.Packet;
 import xyz.wagyourtail.voxelshare.packets.s2c.PacketPositionS2C;
@@ -26,6 +25,7 @@ public class DedicatedClientEndpoint extends Endpoint<MinecraftServer> {
     public int x, z;
     public long waypointSendTime = 0;
     public long regionSendTime = 0;
+    private int chunkid = 0;
 
     public DedicatedClientEndpoint(UUID player) {
         this.player = player;
@@ -66,16 +66,56 @@ public class DedicatedClientEndpoint extends Endpoint<MinecraftServer> {
 
     @Override
     public void sendPacket(MinecraftServer mc, Packet pkt) {
-        PacketByteBuf packet = new PacketByteBuf(Unpooled.buffer());
-        packet.writeBytes((ByteBuffer) pkt.writePacket().rewind());
-        ServerSidePacketRegistry.INSTANCE.sendToPlayer(mc.getPlayerManager().getPlayer(player), VoxelShare.packetId, packet);
+        ByteBuffer buff = (ByteBuffer) pkt.writePacket().rewind();
+        if (buff.capacity() > 30000) {
+            byte[] arr = new byte[30000];
+            int len;
+            int id = ++chunkid;
+            int count = ((buff.capacity() + 29999) / 30000);
+            int index = 0;
+            for (int i = 0; i < buff.capacity(); i += Math.min(30000, buff.remaining())) {
+                len = Math.min(30000, buff.capacity() - i);
+                //TODO: this isn't working...
+                buff.get(arr, i, len);
+                PacketByteBuf packet = new PacketByteBuf(Unpooled.buffer());
+                packet.writeInt(i);
+                packet.writeInt(index);
+                packet.writeInt(count);
+                packet.writeBytes(arr);
+                ServerSidePacketRegistry.INSTANCE.sendToPlayer(mc.getPlayerManager().getPlayer(player), VoxelShare.chunkedPacketId, packet);
+            }
+        } else {
+            PacketByteBuf packet = new PacketByteBuf(Unpooled.buffer());
+            packet.writeBytes(buff);
+            ServerSidePacketRegistry.INSTANCE.sendToPlayer(mc.getPlayerManager().getPlayer(player), VoxelShare.packetId, packet);
+        }
+
     }
 
     @Override
     public void sendPacket(PacketContext ctx, Packet pkt) {
-        PacketByteBuf packet = new PacketByteBuf(Unpooled.buffer());
-        packet.writeBytes((ByteBuffer) pkt.writePacket().rewind());
-        ((ServerPlayNetworkHandler)ctx).sendPacket(new CustomPayloadS2CPacket(VoxelShare.packetId, packet));
+        ByteBuffer buff = (ByteBuffer) pkt.writePacket().rewind();
+        if (buff.capacity() > 30000) {
+            byte[] arr = new byte[30000];
+            int len;
+            int id = ++chunkid;
+            int count = ((buff.capacity() + 29999) / 30000);
+            int index = 0;
+            for (int i = 0; i < buff.capacity(); i += Math.min(30000, buff.remaining())) {
+                len = Math.min(30000, buff.capacity() - i);
+                buff.get(arr, i, len);
+                PacketByteBuf packet = new PacketByteBuf(Unpooled.buffer());
+                packet.writeInt(i);
+                packet.writeInt(index);
+                packet.writeInt(count);
+                packet.writeBytes(arr);
+                ((ServerPlayNetworkHandler) ctx).sendPacket(new CustomPayloadS2CPacket(VoxelShare.chunkedPacketId, packet));
+            }
+        } else {
+            PacketByteBuf packet = new PacketByteBuf(Unpooled.buffer());
+            packet.writeBytes(buff);
+            ((ServerPlayNetworkHandler) ctx).sendPacket(new CustomPayloadS2CPacket(VoxelShare.packetId, packet));
+        }
     }
 
 }

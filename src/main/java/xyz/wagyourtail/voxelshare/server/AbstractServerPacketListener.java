@@ -37,9 +37,7 @@ public abstract class AbstractServerPacketListener extends BasePacketListener {
 
     public abstract void onHaveRegion(PacketHaveRegionC2S haveRegion);
 
-    public void onHaveRegions(PacketHaveRegionsC2S haveRegions) {
-        haveRegions.children.forEach(this::onHaveRegion);
-    }
+    public abstract void onHaveRegions(PacketHaveRegionsC2S haveRegions);
 
     public abstract void onWaypoint(PacketWaypointC2S waypoint);
 

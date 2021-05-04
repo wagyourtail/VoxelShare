@@ -1,7 +1,12 @@
 package xyz.wagyourtail.voxelshare;
 
 import com.google.common.collect.Lists;
+import xyz.wagyourtail.voxelmapapi.RegionContainer;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
 
 public class RegionHelper {
@@ -30,7 +35,31 @@ public class RegionHelper {
             result = 31 * result + Arrays.hashCode(data);
             return result;
         }
+    }
 
+    public static Map<String, Map<String, List<File>>> getFiles(File server) throws IOException {
+        Map<String, Map<String, List<File>>> fmap = new HashMap<>();
+        Files.walk(server.toPath()).filter(e -> e.toFile().isFile() && e.getFileName().toString().matches("-?\\d+,-?\\d+\\.zip")).forEach(e -> {
+            List<String> parents = new LinkedList<>();
+            int i = server.toPath().getNameCount();
+            for (; i < e.getNameCount(); ++i) {
+                parents.add(e.getName(i).toString());
+            }
+            String world;
+            String dimension;
+            if (parents.size() == 1) {
+                world = "";
+                dimension = "";
+            } else if (parents.size() == 2) {
+                world = "";
+                dimension = parents.get(0);
+            } else {
+                world = parents.get(0);
+                dimension = parents.get(1);
+            }
+            fmap.computeIfAbsent(world, w -> new HashMap<>()).computeIfAbsent(dimension, d -> new LinkedList<>()).add(e.toFile());
+        });
+        return fmap;
     }
 
     public static RegionData regionZipper(RegionData ra, RegionData rb) {

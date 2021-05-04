@@ -12,6 +12,7 @@ public class VoxelShare implements ModInitializer {
     private static final Gson gson = new Gson();
     private static final File configFile = FabricLoader.getInstance().getConfigDir().resolve("VoxelShare.json").toFile();
     public static final Identifier packetId = new Identifier("voxelshare", "packet");
+    public static final Identifier chunkedPacketId = new Identifier("voxelshare", "chunkedpacket");
     public static ConfigOptions config;
     public static Logger LOGGER = ((net.fabricmc.loader.FabricLoader)FabricLoader.getInstance()).getLogger();
 

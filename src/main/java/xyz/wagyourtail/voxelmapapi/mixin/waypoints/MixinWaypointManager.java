@@ -12,8 +12,8 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
-import xyz.wagyourtail.voxelmapapi.IWaypoint;
-import xyz.wagyourtail.voxelmapapi.IWaypointManager;
+import xyz.wagyourtail.voxelmapapi.accessor.IWaypoint;
+import xyz.wagyourtail.voxelmapapi.accessor.IWaypointManager;
 
 import java.io.BufferedReader;
 import java.io.File;

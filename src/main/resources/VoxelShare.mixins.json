@@ -7,7 +7,11 @@
     "MixinMinecraftClient"
   ],
   "mixins": [
-    "MixinPlayerManager"
+    "MixinPlayerManager",
+    "xlPackets.MixinPacketByteBuf",
+    "xlPackets.MixinPacketInflater",
+    "xlPackets.MixinCustomPayloadC2SPacket",
+    "xlPackets.MixinCustomPayloadS2CPacket"
   ],
   "injectors": {
     "defaultRequire": 1

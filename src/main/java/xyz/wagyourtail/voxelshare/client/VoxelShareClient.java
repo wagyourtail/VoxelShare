@@ -16,7 +16,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.text.LiteralText;
 import net.minecraft.util.Formatting;
 import net.minecraft.world.dimension.DimensionType;
-import xyz.wagyourtail.voxelmapapi.IWaypoint;
+import xyz.wagyourtail.voxelmapapi.accessor.IWaypoint;
 import xyz.wagyourtail.voxelmapapi.VoxelMapApi;
 import xyz.wagyourtail.voxelmapapi.events.SetWorldEvent;
 import xyz.wagyourtail.voxelshare.VoxelShare;
@@ -33,12 +33,15 @@ import xyz.wagyourtail.voxelshare.packets.s2c.PacketWaypointS2C;
 import xyz.wagyourtail.voxelshare.server.VoxelShareServer;
 
 import java.nio.ByteBuffer;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.TreeSet;
 
 @Environment(EnvType.CLIENT)
 public class VoxelShareClient extends VoxelShareServer implements ClientModInitializer {
     //TODO: ad-hoc server stuff with 2 port (full duplex) TCP hole punching
     public static AbstractClientPacketListener clientPacketListener;
+    private static final Map<Integer, Map<Integer, ByteBuffer>> chunkedPackets = new HashMap<>();
 
     @Override
     public void onInitializeClient() {
@@ -50,19 +53,21 @@ public class VoxelShareClient extends VoxelShareServer implements ClientModIniti
     public void registerEvents() {
         super.registerEvents();
         ClientSidePacketRegistry.INSTANCE.register(VoxelShare.packetId, this::onServerPacket);
+        ClientSidePacketRegistry.INSTANCE.register(VoxelShare.chunkedPacketId, this::onChunkedServerPacket);
         LeaveServerEvent.EVENT.register(this::onDisconnect);
         SetWorldEvent.EVENT.register(this::onWorldChange);
     }
 
     protected void onTick(MinecraftClient mc) {
-        if (mc.isIntegratedServerRunning()) {
-            super.onTick(mc.getServer());
-        }
+        new Thread(() -> {
+            if (mc.isIntegratedServerRunning()) {
+                super.onTick(mc.getServer());
+            }
 
-        if (clientPacketListener != null) {
-            clientPacketListener.server.tick(mc);
-        }
-
+            if (clientPacketListener != null) {
+                clientPacketListener.server.tick(mc);
+            }
+        }).start();
     }
 
     public static void logToChat(String message) {
@@ -73,6 +78,7 @@ public class VoxelShareClient extends VoxelShareServer implements ClientModIniti
         clientPacketListener = null;
         VoxelShareServer.logServerMessage("closing server.");
         VoxelMapApi.clearDeletedWaypoints();
+        VoxelMapApi.clearRegions();
     }
 
     protected void onWorldChange(String world) {
@@ -95,7 +101,10 @@ public class VoxelShareClient extends VoxelShareServer implements ClientModIniti
             setClientPacketListener(context, mc, VoxelMapApi.getCurrentServer());
         }
 
-        ByteBuffer buff = buffer.nioBuffer();
+        onServerPacket(buffer.nioBuffer());
+    }
+
+    private void onServerPacket(ByteBuffer buff) {
         clientPacketListener.onPacket(PacketOpcodes.getByOpcode(buff.get()), buff);
     }
 
@@ -116,11 +125,31 @@ public class VoxelShareClient extends VoxelShareServer implements ClientModIniti
     }
 
     @Override
-    protected void onClientPacket(PacketContext context, PacketByteBuf buffer) {
-        ByteBuffer buff = buffer.nioBuffer();
-
+    protected void onClientPacket(PacketContext context, ByteBuffer buff) {
         serverPacketListners.computeIfAbsent(context.getPlayer().getUuid(), uuid -> new IntegratedServerPacketListener(uuid, MinecraftClient.getInstance().getServer()))
             .onPacket(PacketOpcodes.getByOpcode(buff.get()), buff);
+    }
+
+    protected void onChunkedServerPacket(PacketContext context, PacketByteBuf buffer) {
+        ByteBuffer buff = buffer.nioBuffer();
+        //TODO: this isn't working...
+        int id = buff.getInt();
+        int position = buff.getInt();
+        int size = buff.getInt();
+        Map<Integer, ByteBuffer> parts = chunkedPackets.computeIfAbsent(id, i -> new HashMap<>());
+        parts.put(position, buff);
+        if (parts.size() == size) {
+            int i = 0;
+            for (ByteBuffer b : parts.values()) {
+                i += b.capacity() - Integer.BYTES * 3;
+            }
+            ByteBuffer combined = ByteBuffer.allocate(i);
+            for (i = 0; i < parts.size(); ++i) {
+                combined.put(parts.get(i));
+            }
+            chunkedPackets.remove(id);
+            onServerPacket(combined);
+        }
     }
 
     public static PacketWaypointS2C WpToPacket(Waypoint wp) {

@@ -14,8 +14,8 @@ public class PacketRegionC2S extends Packet {
     public final String server, world, dimension;
     public final long updateTime;
     public final int x, z;
-    public final byte[] data;
     public final String keys;
+    public final byte[] data;
 
     public PacketRegionC2S(String server, String world, String dimension, long updateTime, int x, int z, byte[] data, String keys) {
         this.server = server;
@@ -24,8 +24,8 @@ public class PacketRegionC2S extends Packet {
         this.updateTime = updateTime;
         this.x = x;
         this.z = z;
-        this.data = data;
         this.keys = keys;
+        this.data = data;
     }
 
     public PacketRegionC2S(ByteBuffer buff) {
@@ -35,9 +35,9 @@ public class PacketRegionC2S extends Packet {
         this.updateTime = buff.getLong();
         this.x = buff.getInt();
         this.z = buff.getInt();
+        this.keys = readString(buff);
         this.data = new byte[0x10000 * 18];
         buff.get(this.data);
-        this.keys = readString(buff);
     }
 
     @Override
@@ -46,7 +46,7 @@ public class PacketRegionC2S extends Packet {
         byte[] world = this.world.getBytes(StandardCharsets.UTF_8);
         byte[] dimension = this.dimension.getBytes(StandardCharsets.UTF_8);
         byte[] keys = this.keys.getBytes(StandardCharsets.UTF_8);
-        ByteBuffer buff = ByteBuffer.allocate(1 + server.length + world.length + keys.length + dimension.length + data.length + Long.BYTES + Integer.BYTES * 5);
+        ByteBuffer buff = ByteBuffer.allocate(1 + server.length + world.length + keys.length + dimension.length + data.length + Long.BYTES + Integer.BYTES * 6);
         buff.put(OPCODE);
         buff.putInt(server.length);
         buff.put(server);
@@ -57,9 +57,9 @@ public class PacketRegionC2S extends Packet {
         buff.putLong(updateTime);
         buff.putInt(x);
         buff.putInt(z);
-        buff.put(data);
         buff.putInt(keys.length);
         buff.put(keys);
+        buff.put(data);
         return buff;
     }
 

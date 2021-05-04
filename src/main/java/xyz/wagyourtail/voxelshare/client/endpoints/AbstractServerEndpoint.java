@@ -2,7 +2,6 @@ package xyz.wagyourtail.voxelshare.client.endpoints;
 
 import net.minecraft.client.MinecraftClient;
 import xyz.wagyourtail.voxelshare.Endpoint;
-import xyz.wagyourtail.voxelshare.Region;
 
 import java.util.List;
 

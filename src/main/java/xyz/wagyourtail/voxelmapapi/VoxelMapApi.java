@@ -1,18 +1,31 @@
 package xyz.wagyourtail.voxelmapapi;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import com.ibm.icu.impl.locale.XCldrStub;
 import com.mamiyaotaru.voxelmap.VoxelMap;
-import com.mamiyaotaru.voxelmap.persistent.CachedRegion;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
+import net.fabricmc.loader.api.FabricLoader;
 import org.jetbrains.annotations.ApiStatus;
+import xyz.wagyourtail.voxelmapapi.accessor.IWaypointManager;
+import xyz.wagyourtail.voxelmapapi.mixin.region.MixinPersistentMap;
+import xyz.wagyourtail.voxelshare.RegionHelper;
 
-import java.util.*;
+import java.io.File;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 public class VoxelMapApi {
-    private static Map<String, Map<String, Set<Region>>> regions = new HashMap<>();
+    /**
+     * world, dimension, regionKey, region
+     */
+    private static final Map<String, Map<String, Map<String, RegionContainer>>> regions = new HashMap<>();
     private static boolean firstGet = true;
+
+    public static void clearRegions() {
+        regions.clear();
+    }
+
     public static String getCurrentServer() {
         return VoxelMap.getInstance().getWaypointManager().getCurrentWorldName();
     }
@@ -46,28 +59,55 @@ public class VoxelMapApi {
     }
 
     @ApiStatus.Internal
-    public static synchronized void addRegion(String world, String dimension, CachedRegion region) {
-        Region n = new Region(region.getX(), region.getZ(), world, dimension, region);
-        Set<Region> reg = regions.computeIfAbsent(world, e -> new HashMap<>()).computeIfAbsent(dimension, d -> new LinkedHashSet<>());
-        reg.remove(n);
-        reg.add(n);
+    public static synchronized RegionContainer addRegion(String world, String dimension, String key, int x, int z) {
+        RegionContainer n = new RegionContainer(world, dimension, x, z);
+        Map<String, RegionContainer> reg = regions.computeIfAbsent(world, e -> new HashMap<>()).computeIfAbsent(dimension, d -> new LinkedHashMap<>());
+        reg.put(key, n);
+        return n;
     }
 
-    public static synchronized Map<String, Map<String, Set<Region>>> getRegions() {
+    public static synchronized Map<String, Map<String, Map<String, RegionContainer>>> getRegions() {
         if (firstGet) {
-            //TODO: load not yet loaded regions (threadsafely)
+            MixinPersistentMap pMap = (MixinPersistentMap) VoxelMap.getInstance().getPersistentMap();
+            synchronized (pMap.getCachedRegions()) {
+                try {
+                    Map<String, Map<String, List<File>>> files = RegionHelper.getFiles(getBaseFolder());
+                    for (Map.Entry<String, Map<String, List<File>>> wd : files.entrySet()) {
+                        String world = wd.getKey();
+                        for (Map.Entry<String, List<File>> dim : wd.getValue().entrySet()) {
+                            String dimension = dim.getKey();
+                            for (File file : dim.getValue()) {
+                                String key = file.getName().replace(".zip", "");
+                                regions.computeIfAbsent(world, w -> new HashMap<>()).computeIfAbsent(dimension, d ->
+                                    new LinkedHashMap<>()).computeIfAbsent(key, k -> {
+                                        String[] kp = k.split(",");
+                                        return new RegionContainer(world, dimension, Integer.parseInt(kp[0]), Integer.parseInt(kp[1]));
+                                });
+                            }
+                        }
+                    }
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
+                }
+            }
             firstGet = false;
         }
 
-        Map<String, Map<String, Set<Region>>> copy = new HashMap<>();
-        Map<String, Set<Region>> innerCopy;
-        for (Map.Entry<String, Map<String, Set<Region>>> entry : regions.entrySet()) {
-            innerCopy = new HashMap<>();
-            for (Map.Entry<String, Set<Region>> innerEntry : entry.getValue().entrySet()) {
-                innerCopy.put(innerEntry.getKey(), ImmutableSet.copyOf(innerEntry.getValue()));
-            }
-            copy.put(entry.getKey(), ImmutableMap.copyOf(innerCopy));
-        }
-        return ImmutableMap.copyOf(copy);
+        return regions;
+    }
+
+    public static synchronized RegionContainer getOrCreateRegion(String world, String dimension, int x, int z) {
+        return getRegions().computeIfAbsent(world, w -> new HashMap<>())
+            .computeIfAbsent(dimension, d -> new LinkedHashMap<>())
+            .computeIfAbsent(x + "," + z, k -> new RegionContainer(world, dimension, x, z));
+    }
+
+    public static synchronized File getBaseFolder() {
+        return new File(FabricLoader.getInstance().getGameDirectory(), "/voxelmap/cache/" + getCurrentServer() + "/");
+    }
+
+    public static synchronized void addNewRegionData(String world, String dimension, int x, int z, RegionHelper.RegionData region) {
+        RegionContainer match = getOrCreateRegion(world, dimension, x, z);
+        match.combineData(region);
     }
 }

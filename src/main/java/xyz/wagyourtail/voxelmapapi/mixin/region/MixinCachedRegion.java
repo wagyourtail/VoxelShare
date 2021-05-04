@@ -11,7 +11,9 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import xyz.wagyourtail.voxelmapapi.ICachedRegion;
+import xyz.wagyourtail.voxelmapapi.accessor.ICachedRegion;
+import xyz.wagyourtail.voxelmapapi.VoxelMapApi;
+import xyz.wagyourtail.voxelmapapi.events.Synchronization;
 
 import java.util.Properties;
 
@@ -19,12 +21,23 @@ import java.util.Properties;
 public abstract class MixinCachedRegion implements ICachedRegion {
     @Shadow private boolean liveChunksUpdated;
     @Unique private long lastChangeTime = 0;
+    @Unique private final Synchronization sync = new Synchronization();
 
     @Shadow protected abstract void saveData(boolean newThread);
 
     @Shadow protected abstract void fillImage();
 
     @Shadow private CompressibleGLBufferedImage image;
+
+    @Shadow private String subworldName;
+
+    @Shadow private String dimensionNamePathPart;
+
+    @Shadow private String key;
+
+    @Shadow private int x;
+
+    @Shadow private int z;
 
     @Accessor
     public abstract boolean isClosed();
@@ -62,16 +75,24 @@ public abstract class MixinCachedRegion implements ICachedRegion {
         return buff;
     }
 
+    @Inject(method = "load", at = @At("HEAD"))
+    public void onLoad(CallbackInfo ci) {
+        VoxelMapApi.addRegion(subworldName, dimensionNamePathPart, key, x, z);
+    }
+
+    @Inject(method = "load", at = @At("TAIL"))
+    public void onLoadEnd(CallbackInfo ci) {
+        sync.setDone();
+    }
+
     @Override
     public void setLastChangeTime(long lastChangeTime) {
         this.lastChangeTime = lastChangeTime;
     }
 
     @Override
-    public void doFillImage() {
-        synchronized (image) {
-            fillImage();
-        }
+    public Synchronization getSync() {
+        return sync;
     }
 
 }

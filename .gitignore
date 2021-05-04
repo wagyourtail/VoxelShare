@@ -23,6 +23,7 @@
 .idea
 build/
 run/
+run2/
 runserver/
 *.iml
 

@@ -44,11 +44,7 @@ public abstract class AbstractClientPacketListener extends BasePacketListener {
 
     public abstract void onHaveRegion(PacketHaveRegionS2C haveRegion);
 
-    @SuppressWarnings({"rawtypes","unchecked"})
-    public void onHaveRegions(PacketHaveRegionsS2C haveRegions) {
-        checkServer(haveRegions.server);
-        ((List<PacketHaveRegionS2C>)(List)haveRegions.children).forEach(this::onHaveRegion);
-    }
+    public abstract void onHaveRegions(PacketHaveRegionsS2C haveRegions);
 
     public abstract void onWaypoint(PacketWaypointS2C waypoint);
 

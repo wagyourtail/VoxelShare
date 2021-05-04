@@ -10,6 +10,4 @@ public interface ICachedRegion {
     long getLastChangeTime();
 
     void setLastChangeTime(long time);
-
-    void doFillImage();
 }

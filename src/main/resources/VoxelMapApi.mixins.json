@@ -8,6 +8,8 @@
     "position.MixinGuiPersistentMap",
     "region.MixinBlockStateParser",
     "region.MixinCachedRegion",
+    "region.MixinCompressibleMapData",
+    "region.MixinPersistentMap",
     "waypoints.MixinCommandUtils",
     "waypoints.MixinGuiAddWaypoint",
     "waypoints.MixinGuiPersistentMap",
