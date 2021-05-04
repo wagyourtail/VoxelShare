@@ -1,4 +1,6 @@
-package xyz.wagyourtail.voxelmapapi;
+package xyz.wagyourtail.voxelmapapi.accessor;
+
+import xyz.wagyourtail.voxelmapapi.events.Synchronization;
 
 public interface ICachedRegion {
     boolean isClosed();
@@ -10,4 +12,6 @@ public interface ICachedRegion {
     long getLastChangeTime();
 
     void setLastChangeTime(long time);
+
+    Synchronization getSync();
 }

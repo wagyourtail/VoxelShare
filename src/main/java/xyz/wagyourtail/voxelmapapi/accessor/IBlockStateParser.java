@@ -1,4 +1,4 @@
-package xyz.wagyourtail.voxelmapapi;
+package xyz.wagyourtail.voxelmapapi.accessor;
 
 import net.minecraft.block.BlockState;
 
