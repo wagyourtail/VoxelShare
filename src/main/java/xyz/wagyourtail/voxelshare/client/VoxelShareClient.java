@@ -41,7 +41,7 @@ import java.util.TreeSet;
 public class VoxelShareClient extends VoxelShareServer implements ClientModInitializer {
     //TODO: ad-hoc server stuff with 2 port (full duplex) TCP hole punching
     public static AbstractClientPacketListener clientPacketListener;
-    private static final Map<Integer, Map<Integer, ByteBuffer>> chunkedPackets = new HashMap<>();
+    private static final Map<Integer, Map<Integer, byte[]>> chunkedPackets = new HashMap<>();
 
     @Override
     public void onInitializeClient() {
@@ -130,25 +130,27 @@ public class VoxelShareClient extends VoxelShareServer implements ClientModIniti
             .onPacket(PacketOpcodes.getByOpcode(buff.get()), buff);
     }
 
-    protected void onChunkedServerPacket(PacketContext context, PacketByteBuf buffer) {
-        ByteBuffer buff = buffer.nioBuffer();
+    protected synchronized void onChunkedServerPacket(PacketContext context, PacketByteBuf buffer) {
         //TODO: this isn't working...
+        ByteBuffer buff = buffer.nioBuffer();
         int id = buff.getInt();
         int position = buff.getInt();
         int size = buff.getInt();
-        Map<Integer, ByteBuffer> parts = chunkedPackets.computeIfAbsent(id, i -> new HashMap<>());
-        parts.put(position, buff);
+        byte [] bytes = new byte[buff.remaining()];
+        buff.get(bytes);
+        Map<Integer, byte[]> parts = chunkedPackets.computeIfAbsent(id, i -> new HashMap<>());
+        parts.put(position, bytes);
         if (parts.size() == size) {
             int i = 0;
-            for (ByteBuffer b : parts.values()) {
-                i += b.capacity() - Integer.BYTES * 3;
+            for (byte[] b : parts.values()) {
+                i += b.length;
             }
             ByteBuffer combined = ByteBuffer.allocate(i);
-            for (i = 0; i < parts.size(); ++i) {
+            for (i = 1; i <= parts.size(); ++i) {
                 combined.put(parts.get(i));
             }
             chunkedPackets.remove(id);
-            onServerPacket(combined);
+            onServerPacket((ByteBuffer) combined.rewind());
         }
     }
 

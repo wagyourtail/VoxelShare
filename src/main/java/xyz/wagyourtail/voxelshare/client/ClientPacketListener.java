@@ -40,7 +40,8 @@ public class ClientPacketListener extends AbstractClientPacketListener {
             Map<Integer, String> keys = new HashMap<>();
             for (String s : region.keys.split("\r?\n")) {
                 String[] parts = s.split("\\s", 2);
-                keys.put(Integer.parseInt(parts[0]), parts[1]);
+                if (parts.length == 2)
+                    keys.put(Integer.parseInt(parts[0]), parts[1]);
             }
             RegionHelper.RegionData reg = new RegionHelper.RegionData(region.data, keys, region.updateTime);
             VoxelMapApi.addNewRegionData(region.world, region.dimension, region.x, region.z, reg);

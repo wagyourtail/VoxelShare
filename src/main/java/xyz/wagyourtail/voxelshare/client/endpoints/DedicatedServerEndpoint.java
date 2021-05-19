@@ -38,14 +38,14 @@ public class DedicatedServerEndpoint extends AbstractServerEndpoint {
             int id = ++chunkid;
             int count = ((buff.capacity() + 29999) / 30000);
             int index = 0;
-            for (int i = 0; i < buff.capacity(); i += Math.min(30000, buff.remaining())) {
-                len = Math.min(30000, buff.capacity() - i);
-                buff.get(arr, i, len);
+            for (int i = 0; i < buff.capacity(); i += 30000) {
+                len = Math.min(30000, buff.remaining());
+                buff.get(arr, 0, len);
                 PacketByteBuf packet = new PacketByteBuf(Unpooled.buffer());
-                packet.writeInt(i);
-                packet.writeInt(index);
+                packet.writeInt(id);
+                packet.writeInt(++index);
                 packet.writeInt(count);
-                packet.writeBytes(arr);
+                packet.writeBytes(arr, 0, len);
                 ClientSidePacketRegistry.INSTANCE.sendToServer(VoxelShare.chunkedPacketId, packet);
             }
         } else {
@@ -64,14 +64,14 @@ public class DedicatedServerEndpoint extends AbstractServerEndpoint {
             int id = ++chunkid;
             int count = ((buff.capacity() + 29999) / 30000);
             int index = 0;
-            for (int i = 0; i < buff.capacity(); i += Math.min(30000, buff.remaining())) {
-                len = Math.min(30000, buff.capacity() - i);
-                buff.get(arr, i, len);
+            for (int i = 0; i < buff.capacity(); i += 30000) {
+                len = Math.min(30000, buff.remaining());
+                buff.get(arr, 0, len);
                 PacketByteBuf packet = new PacketByteBuf(Unpooled.buffer());
-                packet.writeInt(i);
-                packet.writeInt(index);
+                packet.writeInt(id);
+                packet.writeInt(++index);
                 packet.writeInt(count);
-                packet.writeBytes(arr);
+                packet.writeBytes(arr, 0, len);
                 ((ClientPlayNetworkHandler) ctx).sendPacket(new CustomPayloadC2SPacket(VoxelShare.chunkedPacketId, packet));
             }
         } else {

@@ -73,15 +73,15 @@ public class DedicatedClientEndpoint extends Endpoint<MinecraftServer> {
             int id = ++chunkid;
             int count = ((buff.capacity() + 29999) / 30000);
             int index = 0;
-            for (int i = 0; i < buff.capacity(); i += Math.min(30000, buff.remaining())) {
-                len = Math.min(30000, buff.capacity() - i);
+            for (int i = 0; i < buff.capacity(); i += 30000) {
+                len = Math.min(30000, buff.remaining());
                 //TODO: this isn't working...
-                buff.get(arr, i, len);
+                buff.get(arr, 0, len);
                 PacketByteBuf packet = new PacketByteBuf(Unpooled.buffer());
-                packet.writeInt(i);
-                packet.writeInt(index);
+                packet.writeInt(id);
+                packet.writeInt(++index);
                 packet.writeInt(count);
-                packet.writeBytes(arr);
+                packet.writeBytes(arr, 0, len);
                 ServerSidePacketRegistry.INSTANCE.sendToPlayer(mc.getPlayerManager().getPlayer(player), VoxelShare.chunkedPacketId, packet);
             }
         } else {
@@ -101,14 +101,14 @@ public class DedicatedClientEndpoint extends Endpoint<MinecraftServer> {
             int id = ++chunkid;
             int count = ((buff.capacity() + 29999) / 30000);
             int index = 0;
-            for (int i = 0; i < buff.capacity(); i += Math.min(30000, buff.remaining())) {
-                len = Math.min(30000, buff.capacity() - i);
-                buff.get(arr, i, len);
+            for (int i = 0; i < buff.capacity(); i += 30000) {
+                len = Math.min(30000, buff.remaining());
+                buff.get(arr, 0, len);
                 PacketByteBuf packet = new PacketByteBuf(Unpooled.buffer());
-                packet.writeInt(i);
-                packet.writeInt(index);
+                packet.writeInt(id);
+                packet.writeInt(++index);
                 packet.writeInt(count);
-                packet.writeBytes(arr);
+                packet.writeBytes(arr, 0, len);
                 ((ServerPlayNetworkHandler) ctx).sendPacket(new CustomPayloadS2CPacket(VoxelShare.chunkedPacketId, packet));
             }
         } else {

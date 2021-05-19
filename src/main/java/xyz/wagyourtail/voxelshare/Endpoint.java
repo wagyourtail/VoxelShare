@@ -4,7 +4,7 @@ import net.fabricmc.fabric.api.network.PacketContext;
 import xyz.wagyourtail.voxelshare.packets.Packet;
 
 public abstract class Endpoint<T> {
-    private int i = 0;
+    private int i = -100;
     public boolean sendWaypoints, sendRegions, sendPositions;
     public int waypointFrequency = Integer.MAX_VALUE, regionFrequency = Integer.MAX_VALUE, positionFrequency = Integer.MAX_VALUE;
 

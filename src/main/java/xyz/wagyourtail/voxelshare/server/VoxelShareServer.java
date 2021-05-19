@@ -20,11 +20,10 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.LinkedBlockingQueue;
 
 public class VoxelShareServer implements DedicatedServerModInitializer {
     public static final Map<UUID, AbstractServerPacketListener> serverPacketListners = new LinkedHashMap<>();
-    private static final Map<Integer, Map<Integer, ByteBuffer>> chunkedPackets = new HashMap<>();
+    private static final Map<Integer, Map<Integer, byte[]>> chunkedPackets = new HashMap<>();
 
     @Override
     public void onInitializeServer() {
@@ -73,23 +72,26 @@ public class VoxelShareServer implements DedicatedServerModInitializer {
     }
 
     protected synchronized void onChunkedClientPacket(PacketContext context, PacketByteBuf buffer) {
+        //TODO: this isn't working...
         ByteBuffer buff = buffer.nioBuffer();
         int id = buff.getInt();
         int position = buff.getInt();
         int size = buff.getInt();
-        Map<Integer, ByteBuffer> parts = chunkedPackets.computeIfAbsent(id, i -> new HashMap<>());
-        parts.put(position, buff);
+        byte [] bytes = new byte[buff.remaining()];
+        buff.get(bytes);
+        Map<Integer, byte[]> parts = chunkedPackets.computeIfAbsent(id, i -> new HashMap<>());
+        parts.put(position, bytes);
         if (parts.size() == size) {
             int i = 0;
-            for (ByteBuffer b : parts.values()) {
-                i += b.capacity() - Integer.BYTES * 3;
+            for (byte[] b : parts.values()) {
+                i += b.length;
             }
             ByteBuffer combined = ByteBuffer.allocate(i);
-            for (i = 0; i < parts.size(); ++i) {
+            for (i = 1; i <= parts.size(); ++i) {
                 combined.put(parts.get(i));
             }
             chunkedPackets.remove(id);
-            onClientPacket(context, combined);
+            onClientPacket(context, (ByteBuffer) combined.rewind());
         }
     }
 }

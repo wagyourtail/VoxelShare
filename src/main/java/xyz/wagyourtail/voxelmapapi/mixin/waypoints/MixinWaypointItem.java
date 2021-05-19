@@ -25,26 +25,23 @@ import java.lang.reflect.Field;
 public class MixinWaypointItem {
     @Shadow @Final private Waypoint waypoint;
 
-    @Shadow @Final private GuiWaypoints parentGui;
-    @Unique GuiSlotMinimap parent = null;
-
-    @Unique
-    private GuiSlotMinimap getParent() {
-        if (parent != null) return parent;
-        try {
-            Field f = this.getClass().getDeclaredField("this$0");
-            parent = (GuiSlotMinimap) f.get(this);
-        } catch (IllegalAccessException | NoSuchFieldException e) {
-            e.printStackTrace();
-        }
-        return parent;
-    }
+//    @Shadow @Final private GuiWaypoints parentGui;
+//    @Unique GuiSlotMinimap parent = null;
+//
+//    @Unique
+//    private GuiSlotMinimap getParent() {
+//        if (parent != null) return parent;
+//        try {
+//            Field f = this.getClass().getDeclaredField("this$0");
+//            parent = (GuiSlotMinimap) f.get(this);
+//        } catch (IllegalAccessException | NoSuchFieldException e) {
+//            e.printStackTrace();
+//        }
+//        return parent;
+//    }
 
     @Inject(method = "mouseClicked", at = @At("RETURN"), locals = LocalCapture.CAPTURE_FAILHARD)
     public void onMouseClicked(double mouseX, double mouseY, int mouseButton, CallbackInfoReturnable<Boolean> cir, int leftEdge, byte padding,  int width) {
-        System.out.println(leftEdge);
-        System.out.println(width);
-        System.out.println(mouseX);
         if (mouseX >= (double) (leftEdge + width - 16 - 20 - padding) && mouseX < (double) (leftEdge + width - 16 - padding)) {
             ((IWaypoint)waypoint).setSync(!((IWaypoint)waypoint).shouldSync());
             VoxelMap.getInstance().getWaypointManager().saveWaypoints();

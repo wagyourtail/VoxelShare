@@ -7,6 +7,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -20,13 +21,15 @@ public class RegionReadWriter implements RegionRW<Object> {
     public final int x, z;
 
     private boolean loadedData = false, loadedKey = false, loadedControl = false;
+    private boolean fileExists = false;
 
-    private final byte[] data = new byte[0x10000 * 18];
+    private byte[] data = new byte[0x10000 * 18];
     private final Map<Integer, String> key = new HashMap<>();
     private final Properties controlProperties = new Properties();
 
     public RegionReadWriter(File directory, String world, String dimension, int x, int z) {
-        this.file = new File(directory, world + "/" + dimension + "/" + x + "," + z + ".zip");
+        this.file = new File(directory, world + "/" + dimension + "/" + x + "," + z + ".zip").getAbsoluteFile();
+        this.fileExists = file.exists();
         this.world = world;
         this.dimension = dimension;
         this.x = x;
@@ -40,7 +43,7 @@ public class RegionReadWriter implements RegionRW<Object> {
 
     private synchronized void loadData() throws IOException {
         if (loadedData) return;
-        if (file.exists()) {
+        if (fileExists) {
             try (ZipFile zf = new ZipFile(file)) {
                 ZipEntry ze = zf.getEntry("data");
                 try (InputStream is = zf.getInputStream(ze)) {
@@ -56,7 +59,7 @@ public class RegionReadWriter implements RegionRW<Object> {
 
     private synchronized  void loadKey() throws IOException {
         if (loadedKey) return;
-        if (file.exists()) {
+        if (fileExists) {
             try (ZipFile zf = new ZipFile(file)) {
                 ZipEntry ze = zf.getEntry("key");
                 try (InputStream is = zf.getInputStream(ze)) {
@@ -65,6 +68,9 @@ public class RegionReadWriter implements RegionRW<Object> {
                         String[] parts = s.split("\\s", 2);
                         key.put(Integer.parseInt(parts[0]), parts[1]);
                     }
+                } catch (NumberFormatException ex) {
+                    this.data = new byte[0x10000 * 18];
+                    this.loadedData = true;
                 }
             }
         }
@@ -73,7 +79,7 @@ public class RegionReadWriter implements RegionRW<Object> {
 
     private synchronized void loadControl() throws IOException {
         if (loadedControl) return;
-        if (file.exists()) {
+        if (fileExists) {
             try (ZipFile zf = new ZipFile(file)) {
                 ZipEntry ze = zf.getEntry("control");
                 try (InputStream is = zf.getInputStream(ze)) {
@@ -125,6 +131,8 @@ public class RegionReadWriter implements RegionRW<Object> {
         loadData();
         loadKey();
         loadControl();
+        System.out.println(file);
+        file.createNewFile();
         try (FileOutputStream fos = new FileOutputStream(file); ZipOutputStream zos = new ZipOutputStream(fos)) {
             ZipEntry ze = new ZipEntry("data");
             ze.setSize(data.length);

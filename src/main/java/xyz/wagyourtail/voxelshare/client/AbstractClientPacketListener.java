@@ -135,7 +135,7 @@ public abstract class AbstractClientPacketListener extends BasePacketListener {
                 break;
             case Error:
             default:
-                throw new UnsupportedOperationException("Unsupported Opcode");
+                throw new UnsupportedOperationException("Unsupported Opcode: " + opcode);
         }
     }
 

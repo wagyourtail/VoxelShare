@@ -1,5 +1,6 @@
 package xyz.wagyourtail.voxelshare.client.server;
 
+import com.google.common.collect.ImmutableMap;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.server.MinecraftServer;
 import xyz.wagyourtail.voxelmapapi.accessor.IWaypoint;
@@ -28,9 +29,9 @@ public class IntegratedClientEndpoint extends DedicatedClientEndpoint {
         if (MinecraftClient.getInstance().player.getUuid().equals(player)) return;
 
         String server = VoxelMapApi.getCurrentServer();
-        for (Map.Entry<String, Map<String, Map<String, RegionContainer>>> reg : VoxelMapApi.getRegions().entrySet()) {
+        for (Map.Entry<String, Map<String, Map<String, RegionContainer>>> reg : ImmutableMap.copyOf(VoxelMapApi.getRegions()).entrySet()) {
             String world = reg.getKey();
-            for (Map.Entry<String, Map<String, RegionContainer>> reg2 : reg.getValue().entrySet()) {
+            for (Map.Entry<String, Map<String, RegionContainer>> reg2 : ImmutableMap.copyOf(reg.getValue()).entrySet()) {
                 List<PacketHaveRegionS2C> regions = new LinkedList<>();
                 for (RegionContainer region : reg2.getValue().values()) {
                     if (regionSendTime < region.getTime()) {

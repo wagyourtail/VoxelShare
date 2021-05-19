@@ -1,8 +1,11 @@
 package xyz.wagyourtail.voxelmapapi;
 
 import com.mamiyaotaru.voxelmap.VoxelMap;
+import com.mamiyaotaru.voxelmap.WaypointManager;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.util.WorldSavePath;
 import org.jetbrains.annotations.ApiStatus;
 import xyz.wagyourtail.voxelmapapi.accessor.IWaypointManager;
 import xyz.wagyourtail.voxelmapapi.mixin.region.MixinPersistentMap;
@@ -27,7 +30,17 @@ public class VoxelMapApi {
     }
 
     public static String getCurrentServer() {
-        return VoxelMap.getInstance().getWaypointManager().getCurrentWorldName();
+        String mapName;
+        WaypointManager man = ((WaypointManager)VoxelMap.getInstance().getWaypointManager());
+        if (MinecraftClient.getInstance().isIntegratedServerRunning()) {
+            mapName = MinecraftClient.getInstance().getServer().getSavePath(WorldSavePath.ROOT).normalize().toFile().getName();
+        } else {
+            mapName = man.getServerName();
+            if (mapName != null) {
+                mapName = mapName.toLowerCase();
+            }
+        }
+        return mapName;
     }
 
     public static String getCurrentWorld() {

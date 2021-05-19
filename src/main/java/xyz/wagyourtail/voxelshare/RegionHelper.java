@@ -113,7 +113,7 @@ public class RegionHelper {
     }
 
     private static int getInt(byte[] from, int pos) {
-        return from[pos] << 8 + from[pos + 0x10000];
+        return ((int) from[pos]) << 8 | (int) from[pos + 0x10000];
     }
 
     private static void writeBlockToNew(int blk, byte[] from, int[] blocks, byte[] to) {
